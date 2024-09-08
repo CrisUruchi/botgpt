@@ -27,10 +27,11 @@ export class WaapiService {
 
     async handleOutgoingMessage(config: any, taskPayload:any): Promise<void> {
         const instance = await this.instanceRepository.findOne({ where: { id: taskPayload.instance }});
+        console.log("instance: ",instance);
         if (!instance) {
             throw new Error(`Instance ID: ${taskPayload.instance} not found`)
         }
-
+        console.log("config:", config);
         //buscar o crear un thread
         const { thread } = await this.threadService.findOrCreateThread(instance, taskPayload.toFrom);
         const message = await this.messageService.createMessage(thread, taskPayload.message, taskPayload.id, 'outgoing', taskPayload.refId);
@@ -72,6 +73,5 @@ export class WaapiService {
                 headers: { Authorization: `Bearer ${config.apiKey}` },
             }
         )
-
     }
 }
