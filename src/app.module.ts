@@ -9,6 +9,8 @@ import { Queue } from './messenger/entities/queue.entity';
 import { Instance } from './messenger/entities/instance.entity';
 import { Thread } from './messenger/entities/thread.entity';
 import { Message } from './messenger/entities/message.entity';
+import { Assistant } from './messenger/entities/assistant.entity';
+import { InstanceAssistant } from './messenger/entities/instance-assistant.entity';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 
@@ -31,7 +33,7 @@ import { Message } from './messenger/entities/message.entity';
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [Queue, Instance, Channel, Thread, Message],
+        entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant],
         synchronize: true, // Usar con precaución en producción
         logging: false,
         timezone: 'Z', //fuerza UTC

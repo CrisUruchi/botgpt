@@ -5,13 +5,21 @@ import { Repository } from "typeorm";
 import axios from "axios";
 import { ThreadService } from "./thread.service";
 import { MessageService } from "./message.service";
+import { AssistantService } from "./assistant.service";
+import { RedisService } from "./redis.service";
+import { Thread } from "../entities/thread.entity";
+import { AutomaticService } from "./automatic.service";
 
 @Injectable()
 export class WaapiService {
     constructor(
         @InjectRepository(Instance) private readonly instanceRepository: Repository<Instance>,
+        @InjectRepository(Thread) private readonly threadRepository: Repository<Thread>,
         private readonly threadService: ThreadService,
         private readonly messageService: MessageService,
+        private readonly assistantService: AssistantService,
+        private readonly redisService: RedisService,
+        private readonly automaticService: AutomaticService,
     ){}
 
     async execute(config: any, taskPayload:any): Promise<void> {
@@ -27,11 +35,10 @@ export class WaapiService {
 
     async handleOutgoingMessage(config: any, taskPayload:any): Promise<void> {
         const instance = await this.instanceRepository.findOne({ where: { id: taskPayload.instance }});
-        console.log("instance: ",instance);
         if (!instance) {
             throw new Error(`Instance ID: ${taskPayload.instance} not found`)
         }
-        console.log("config:", config);
+
         //buscar o crear un thread
         const { thread } = await this.threadService.findOrCreateThread(instance, taskPayload.toFrom);
         const message = await this.messageService.createMessage(thread, taskPayload.message, taskPayload.id, 'outgoing', taskPayload.refId);
@@ -47,19 +54,37 @@ export class WaapiService {
 
         //buscar o crear un thread
         const { isNewThread, thread } = await this.threadService.findOrCreateThread(instance, from);
-
+        const message = await this.messageService.createMessage(thread, taskPayload.data.message.body, taskPayload.id, 'incoming');
+        
         //getAssistant
-        if (isNewThread) {
-            console.log('Assign assistant');
+        if (isNewThread || !thread.assistants || thread.assistants.length === 0) {
+            
+            let assistant = await this.assistantService.getAssistant(instance.id);
+            if (!assistant) {
+                const queueId = await this.redisService.addToQueue({
+                    toFrom: from,
+                    message: 'No tenemos agentes para atenderte en este momento, porfavor intenta mas tarde.',
+                    type: 'out',
+                    channel: 'waapi',
+                    instance: `${instance.id}`
+                });
+                return;
+            }
+            thread.assistants = [assistant];
+            await this.threadRepository.save(thread);
         }
 
-        //if no assistant ... no hay un asistente disponible en este moemento...
-
-        //save message
+        if (thread.assistants[thread.assistants.length - 1].isAutomatic) {
+            if (isNewThread) {
+                await this.automaticService.initConversation(thread.assistants[thread.assistants.length - 1], 'waapi', instance.id, taskPayload.data.message.body);
+            } else {
+                await this.automaticService.createMessage(thread.assistants[thread.assistants.length - 1], 'waapi', instance.id, thread.externalId, taskPayload.data.message.body);
+            }
+        }
 
         //call to openai endpoints
 
-        const message = await this.messageService.createMessage(thread, taskPayload.data.message.body, taskPayload.id, 'incoming');
+        
     }
 
     async sendMessage(config: any, externalId: string, toFrom: string, message: string) {
@@ -73,5 +98,6 @@ export class WaapiService {
                 headers: { Authorization: `Bearer ${config.apiKey}` },
             }
         )
+
     }
 }
