@@ -23,29 +23,29 @@ import { InstanceAssistant } from './messenger/entities/instance-assistant.entit
       imports: [ConfigModule],
       useFactory: async(configService: ConfigService) =>{
         try { // Leer el archivo CA
-        const caPath = path.resolve(__dirname, '..', configService.get<string>('DATABASE_CA'));
-        const caCert = fs.readFileSync(caPath, 'utf8').toString().replace(/\r?\n|\r/g, '\n');
+          const caPath = path.resolve(__dirname, '..', configService.get<string>('DATABASE_CA'));
+          const caCert = fs.readFileSync(caPath, 'utf8').toString().replace(/\r?\n|\r/g, '\n');
 
-        return {
-        type: 'postgres',
-        host: configService.get<string>('DATABASE_HOST'),
-        port: configService.get<number>('DATABASE_PORT'),
-        username: configService.get<string>('DATABASE_USERNAME'),
-        password: configService.get<string>('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_NAME'),
-        entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant],
-        synchronize: true, // Usar con precaución en producción
-        logging: false,
-        timezone: 'Z', //fuerza UTC
-        ssl: {//rejectUnauthorized: false,
-        ca: caCert, 
-        },
-      };
-    } catch(error){
-      console.error('Error loading CA file or connecting to DB:', error.message);
-      throw error; // Rethrow the error to allow retry or further investigation
-    }
-    },
+          return {
+            type: 'postgres',
+            host: configService.get<string>('DATABASE_HOST'),
+            port: configService.get<number>('DATABASE_PORT'),
+            username: configService.get<string>('DATABASE_USERNAME'),
+            password: configService.get<string>('DATABASE_PASSWORD'),
+            database: configService.get<string>('DATABASE_NAME'),
+            entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant],
+            synchronize: true, // Usar con precaución en producción
+            logging: false,
+            timezone: 'Z', //fuerza UTC
+            ssl: {//rejectUnauthorized: false,
+            ca: caCert, 
+            },
+          };
+        } catch(error){
+          console.error('Error loading CA file or connecting to DB:', error.message);
+          throw error; // Rethrow the error to allow retry or further investigation
+        }
+      },
       inject: [ConfigService],
     }),
     MessengerModule
