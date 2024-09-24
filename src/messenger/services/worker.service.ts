@@ -24,13 +24,15 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         //CODE TO PROCESS QUEUE
         while (this.isRunning) {
             const task = await this.redisService.consumeFromQueue();
+            
             if (task) {
                 try {
                     this.queueService.processTask(task);
-                    console.log("new task", new Date(), task);
                 } catch (error) {
                     console.error('Failed to process task: ', task, error);
                 }
+                
+            
             } else {
                 await new Promise(resolve => setTimeout(resolve, 500));
             }

@@ -11,6 +11,9 @@ import { Thread } from './messenger/entities/thread.entity';
 import { Message } from './messenger/entities/message.entity';
 import { Assistant } from './messenger/entities/assistant.entity';
 import { InstanceAssistant } from './messenger/entities/instance-assistant.entity';
+import { AuthModule } from './auth/auth.module';
+import { Function } from './messenger/entities/function.entity';
+import { FunctionCall } from './messenger/entities/functioncall.entity';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 
@@ -33,7 +36,7 @@ import { InstanceAssistant } from './messenger/entities/instance-assistant.entit
             username: configService.get<string>('DATABASE_USERNAME'),
             password: configService.get<string>('DATABASE_PASSWORD'),
             database: configService.get<string>('DATABASE_NAME'),
-            entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant],
+            entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant, Function, FunctionCall],
             synchronize: true, // Usar con precaución en producción
             logging: false,
             timezone: 'Z', //fuerza UTC
@@ -48,7 +51,8 @@ import { InstanceAssistant } from './messenger/entities/instance-assistant.entit
       },
       inject: [ConfigService],
     }),
-    MessengerModule
+    MessengerModule,
+    AuthModule
   ],
   
   // controllers: [AppController],
@@ -57,3 +61,4 @@ import { InstanceAssistant } from './messenger/entities/instance-assistant.entit
 export class AppModule {}
 
 //npm run start:dev
+//http://3.134.77.67:3004/queue/in/waapi/1

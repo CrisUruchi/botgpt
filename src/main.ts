@@ -1,15 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config'
+import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,  // Ignora propiedades que no están en el DTO
+    forbidNonWhitelisted: true,  // Lanza error si se pasan propiedades no permitidas
+    transform: true,  // Transforma los tipos según el DTO
+  }));
   const configService = app.get(ConfigService);
   const port = configService.get<number>('APP_PORT') || 3004;
-  await app.listen(3004);
-  console.log('app running on port :', port);
+  await app.listen(port);
+  console.log(`App running in port ${port}`);
 }
 bootstrap();
-
-//npm install -g @nestjs/cli
-//npm install -g @nestjs/config

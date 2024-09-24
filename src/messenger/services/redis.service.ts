@@ -23,17 +23,17 @@ export class RedisService {
 
     async addToQueue(data: any): Promise<string> {
         const id = new Date().getTime().toString();//Generate unique id
-        await this.writerRedis.lpush('queue', JSON.stringify({ id, ...data }));
+        await this.writerRedis.lpush('queue3', JSON.stringify({ id, ...data }));
         return id;
     }
 
     async getFirstFromQueue(): Promise<any> {    
-        const item = await this.readerRedis.brpop('queue', 3);
+        const item = await this.readerRedis.brpop('queue3', 3);
         return JSON.parse(item[1]);
     }
 
     async consumeFromQueue(): Promise<any> {    
-        const item = await this.readerRedis.brpop('queue', 3);
+        const item = await this.readerRedis.brpop('queue3', 3);
         if (item) {
             return JSON.parse(item[1]);
         }
