@@ -1,0 +1,1 @@
+insert into permission_roles_role ("permissionId", "roleId") values (1, 2)

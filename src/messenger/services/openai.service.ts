@@ -28,7 +28,7 @@ export class OpenaiAservice {
           });
         
         res = await this.waitForResponse(run.thread_id, run.id);
-        const response = await this.handleResponse(res, channel, instanceId, origin);
+        const response = await this.handleResponse(res, channel, instanceId, origin, run.thread_id, configObj);
 
         return {
             rundId: run.id,
@@ -51,7 +51,7 @@ export class OpenaiAservice {
         });
         
         res = await this.waitForResponse(run.thread_id, run.id);
-        const response = await this.handleResponse(res, channel, instanceId, origin);
+        const response = await this.handleResponse(res, channel, instanceId, origin, threadId, configObj);
 
         return {
             rundId: run.id,
@@ -121,8 +121,7 @@ export class OpenaiAservice {
         return (run.status === 'cancelled' || run.status === 'failed' || run.status === 'expired' || run.status === 'queued' || run.status === 'in_progress') ? 'not_processed' : run.status;
     }
 
-    private async handleResponse(response: string | Run, channel: string, instanceId: number, origin: string): Promise<string> {
-        
+    private async handleResponse(response: string | Run, channel: string, instanceId: number, origin: string, threadId: string, assistantConfig: any): Promise<string> {
         if (this.isRun(response)) {
             if (response.status === 'requires_action' && response.required_action && response.required_action.submit_tool_outputs
                 && response.required_action.submit_tool_outputs.tool_calls)  {
@@ -135,12 +134,13 @@ export class OpenaiAservice {
                 const queueId = await this.redisService.addToQueue({
                     type: 'function',
                     channel,
-                    instance: `${instanceId}`, 
+                    instance: instanceId, 
                     firedBy: 'openai',
                     runId: response.id,
                     threadId,
                     origin,
                     functions,
+                    assistantConfig,
                 });
 
                 return '__running_function';
@@ -159,6 +159,34 @@ export class OpenaiAservice {
             return queueId;
         }
 
+    }
+
+    async handleRequireFunction(threadId: string, instanceId: number, channel: string, origin: string, functions: any, runId: string, assistantConfig: any): Promise<any> {
+        this.initOpenAI(assistantConfig.authorization);
+        const functionsOutput = functions.map(item => ({
+            tool_call_id: item.id,
+            output: item.output,
+        }));
+
+        let res: string | Run;
+
+        const run = await this.openai.beta.threads.runs.submitToolOutputsAndPoll(
+            threadId,
+            runId,
+            {
+                tool_outputs: functionsOutput
+            },
+        );
+        res = await this.waitForResponse(run.thread_id, run.id);
+        const response = await this.handleResponse(res, channel, instanceId, origin, threadId, assistantConfig);
+
+        return {
+            runId: run.id,
+            threadId,
+            response,
+        };
+
+    
     }
 
     private isRun(obj: any): obj is Run {

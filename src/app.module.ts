@@ -14,6 +14,9 @@ import { InstanceAssistant } from './messenger/entities/instance-assistant.entit
 import { AuthModule } from './auth/auth.module';
 import { Function } from './messenger/entities/function.entity';
 import { FunctionCall } from './messenger/entities/functioncall.entity';
+import { Permission } from './auth/entities/permission.entity';
+import { Role } from './auth/entities/role.entity';
+import { User } from './auth/entities/user.entity';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 
@@ -26,9 +29,9 @@ import { FunctionCall } from './messenger/entities/functioncall.entity';
       imports: [ConfigModule],
       useFactory: async(configService: ConfigService) =>{
         try { // Leer el archivo CA
-          const caPath = path.resolve(__dirname, '..', configService.get<string>('DATABASE_CA'));
-          const caCert = fs.readFileSync(caPath, 'utf8').toString().replace(/\r?\n|\r/g, '\n');
-
+          // const caPath = path.resolve(__dirname, '..', configService.get<string>('DATABASE_CA'));
+          // const caCert = fs.readFileSync(caPath, 'utf8').toString().replace(/\r?\n|\r/g, '\n');
+          // console.log('Resolved CA Path:', caPath);
           return {
             type: 'postgres',
             host: configService.get<string>('DATABASE_HOST'),
@@ -36,12 +39,13 @@ import { FunctionCall } from './messenger/entities/functioncall.entity';
             username: configService.get<string>('DATABASE_USERNAME'),
             password: configService.get<string>('DATABASE_PASSWORD'),
             database: configService.get<string>('DATABASE_NAME'),
-            entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant, Function, FunctionCall],
+            entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant, Function, FunctionCall, Permission, Role, User],
             synchronize: true, // Usar con precaución en producción
             logging: false,
+            //connectTimeoutMS: 10000, 
             timezone: 'Z', //fuerza UTC
-            ssl: {//rejectUnauthorized: false,
-            ca: caCert, 
+            ssl: {rejectUnauthorized: false,
+//            ca: caCert, 
             },
           };
         } catch(error){

@@ -23,9 +23,8 @@ import { JwtModule } from '@nestjs/jwt';
     })
   ],
   providers: [UserService],
-  controllers: [UserController]
+  controllers: [UserController],
+  exports: [JwtModule],
   
 })
 export class AuthModule {}
-
-//pip install @nestjs/jwt
