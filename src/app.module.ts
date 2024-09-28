@@ -39,7 +39,10 @@ import { User } from './auth/entities/user.entity';
             username: configService.get<string>('DATABASE_USERNAME'),
             password: configService.get<string>('DATABASE_PASSWORD'),
             database: configService.get<string>('DATABASE_NAME'),
-            entities: [Queue, Instance, Channel, Thread, Message, Assistant, InstanceAssistant, Function, FunctionCall, Permission, Role, User],
+            entities: [Queue, Instance, Channel, Thread, Message, 
+                        Assistant, InstanceAssistant, Function, 
+                        FunctionCall, Permission, Role, User,
+                      ],
             synchronize: true, // Usar con precaución en producción
             logging: false,
             //connectTimeoutMS: 10000, 
