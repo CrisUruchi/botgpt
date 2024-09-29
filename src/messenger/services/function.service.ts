@@ -31,7 +31,7 @@ export class FunctionService {
                 url,
                 headers: f.headers ? JSON.parse(f.headers) : {},
                 ...(f.sendBodyParams ? {data: params}: {}),
-
+                httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
             });
 
             const template = Handlebars.compile(f.templateSource);
