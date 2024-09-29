@@ -154,7 +154,8 @@ export class OpenaiAservice {
                 message: response,
                 type: 'out',
                 channel,
-                instance: `${instanceId}`, 
+                instance: instanceId,
+                assistantConfig
             });
             return queueId;
         }

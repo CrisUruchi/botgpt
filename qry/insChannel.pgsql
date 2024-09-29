@@ -10,3 +10,13 @@ values(
     'waapi',
     30
 );
+
+insert into channel (code, service, config, name, "expiresIn")
+values(
+    'web',
+    'a',
+    jsonb_build_object(
+    ),
+    'web',
+    30
+);
