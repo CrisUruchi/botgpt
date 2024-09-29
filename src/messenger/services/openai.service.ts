@@ -155,7 +155,7 @@ export class OpenaiAservice {
                 type: 'out',
                 channel,
                 instance: instanceId,
-                assistantConfig
+                assistantConfig,
             });
             return queueId;
         }
