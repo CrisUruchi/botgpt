@@ -19,7 +19,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
             console.log('QUERY', client.handshake.query);
             const token = client.handshake.query.token as string;
             const decoded = this.jwtService.verify(token);
-            console.log('AUTEHNTICATED', decoded);
+            console.log('AUTHENTICATED', decoded);
             client.data.user = decoded.sub;
         } catch (err) {
             console.log('ERROR WEBSOCKET', err);
@@ -40,6 +40,7 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     sendMessage(threadId: string, message: any) {
+        console.log("emitiendo threadId:", threadId); 
         this.server.to(threadId).emit('newMessage', message);
     }
 }

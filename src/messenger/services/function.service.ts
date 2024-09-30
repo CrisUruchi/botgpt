@@ -26,16 +26,23 @@ export class FunctionService {
             const params = JSON.parse(functionParams);
             const url = f.sendBodyParams ? f.url : this.replaceUrlParams(f.url, params);
 
-            const response = await axios({
-                method: f.method,
-                url,
-                headers: f.headers ? JSON.parse(f.headers) : {},
-                ...(f.sendBodyParams ? {data: params}: {}),
-                httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
-            });
+            //const result =  "ocurrió un error con el consumo de funcion";
+            //try {
+                const response = await axios({
+                    method: f.method,
+                    url,
+                    headers: f.headers ? JSON.parse(f.headers) : {},
+                    ...(f.sendBodyParams ? {data: params}: {}),
+                    httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
+                });
+    
+                const template = Handlebars.compile(f.templateSource);
+                const result = template(response.data);
+            //} catch (error) {
+            //     console.log("error en la funcion " +f.name, error);
+            // }
+            
 
-            const template = Handlebars.compile(f.templateSource);
-            const result = template(response.data);
             functions[index].output = result;
             const functionCall = this.functionCallRepository.create({
                 functionId: f.id,

@@ -23,25 +23,31 @@ export class QueueService {
         const taskPayload = JSON.stringify(task);
         let myqueue = await this.queueRepository.create({ redisId: task.id, payload: taskPayload});
         myqueue = await this.queueRepository.save(myqueue);
-
+        console.log("cola guardada", myqueue);
         let channel: Channel;
         let myFunctions: Function[] = [];
         channel = await this.channelRepository.findOne({ where: { code: task.channel }});
-
+        console.log("channel", channel);
         if (!channel) {
+            console.log("problema con el channel", channel);
             myqueue.errorReason = `Channel ${task.channel} not found`;
             myqueue.status = 'ERROR';
             await this.queueRepository.save(myqueue);
+            console.log("cola guardada", myqueue);
             return;
         }
+        console.log("task.type", task.type);
         if (task.type === 'function') {
+            console.log("tipo funcion");
             for (const f of task.functions) {
                 const myFunction = await this.functionRepository.findOne( { where: { name: f.name }});
 
                 if (!myFunction) {
+                    console.log("problema con la funcion", myFunction);
                     myqueue.errorReason = `Function ${f.name} not found`;
                     myqueue.status = 'ERROR';
                     await this.queueRepository.save(myqueue);
+                    console.log("cola guardada", myqueue);
                     return;
                 }
                 myFunctions.push(myFunction);
@@ -58,6 +64,7 @@ export class QueueService {
         }
         myqueue.status = 'PROCESSED';
         await this.queueRepository.save(myqueue);
+        console.log("guardadoooo", myqueue);
     }
 
     private async execute(channel: string, configOrFunction: any, taskPayload: any): Promise<void> {

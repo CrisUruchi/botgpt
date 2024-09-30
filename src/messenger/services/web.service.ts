@@ -42,6 +42,7 @@ export class WebService {
         //buscar o crear un thread
         const { thread } = await this.threadService.findOrCreateThread(instance, taskPayload.toFrom);
         const message = await this.messageService.createMessage(thread, taskPayload.message, taskPayload.id, 'outgoing', taskPayload.refId);
+        console.log("enviando respuesta",message);
         this.websocketGateway.sendMessage(taskPayload.toFrom, message);
     }
 
